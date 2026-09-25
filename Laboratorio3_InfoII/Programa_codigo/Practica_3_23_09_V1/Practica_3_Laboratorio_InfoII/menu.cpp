@@ -2,7 +2,8 @@
 #include "RLE.h"
 #include "lz78.h"
 #include <iostream>
-#include <limits> // Necesario para std::numeric_limits
+#include <cstring>
+#include <limits>
 
 using namespace std;
 
@@ -38,8 +39,8 @@ void mostrarMenuPruebas() {
         cout << "\n========================================\n";
         cout << "          MENU DE PRUEBAS               \n";
         cout << "========================================\n";
-        cout << "1. Probar Algoritmo RLE (Dia 1)\n";
-        cout << "2. Probar Diccionario LZ78 (Dia 2)\n";
+        cout << "1. Probar Algoritmo RLE\n";
+        cout << "2. Probar Diccionario LZ78\n";
         cout << "0. Volver al Menu Principal\n";
         cout << "========================================\n";
 
@@ -58,14 +59,33 @@ void mostrarMenuPruebas() {
             break;
         }
         case 2: {
-            cout << "\n--- EJECUTANDO PRUEBA DICCIONARIO LZ78 ---\n";
-            Dictionary dict(2);
-            dict.insert(0, 'A');
-            dict.insert(0, 'B');
-            dict.insert(1, 'A');
-            dict.insert(2, 'A');
-            cout << "Entradas insertadas correctamente. Tamano actual: " << dict.size << "\n";
-            cout << "Busqueda de (1, 'A'): Indice " << dict.find(1, 'A') << " (Esperado: 3)\n";
+            const char* textoOriginal = "ABAABABA";
+            size_t lenOriginal = strlen(textoOriginal);
+
+            size_t pairCount = 0;
+            Pair* pairs = LZ78::compress(textoOriginal, lenOriginal, pairCount);
+
+            cout << "Texto Original: " << textoOriginal << "\n";
+            cout << "Pares Emitidos (Indice, Caracter):\n";
+            for (size_t i = 0; i < pairCount; ++i) {
+                cout << "(" << pairs[i].index << ", ";
+                if (pairs[i].character == '\0') cout << "'\\0'";
+                else cout << "'" << pairs[i].character << "'";
+                cout << ") ";
+            }
+            cout << "\n";
+
+            size_t lenRecuperada = 0;
+            char* textoRecuperado = LZ78::decompress(pairs, pairCount, lenRecuperada);
+
+            cout << "Texto Recuperado: " << textoRecuperado << "\n";
+
+            bool coinciden = (strcmp(textoOriginal, textoRecuperado) == 0);
+            cout << "Estado: " << (coinciden ? "[CORRECTO: 100% Sin Pérdida]" : "[ERROR]") << "\n";
+
+            // Liberación estricta de memoria dinámica
+            delete[] pairs;
+            delete[] textoRecuperado;
             break;
         }
         case 0:
