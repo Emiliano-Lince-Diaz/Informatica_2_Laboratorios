@@ -49,7 +49,7 @@ void mostrarMenuPruebas() {
         switch (opcion) {
         case 1: {
             cout << "\n--- EJECUTANDO PRUEBA RLE ---\n";
-            string textoPrueba = "********** 7777777";
+            string textoPrueba = "AAAABBBCC";
             string comp = RLE::compress(textoPrueba);
             string decomp = RLE::decompress(comp);
             cout << "Texto original:    " << textoPrueba << "\n";
@@ -59,7 +59,7 @@ void mostrarMenuPruebas() {
             break;
         }
         case 2: {
-            const char* textoOriginal = "kkkkk+++1111111";
+            const char* textoOriginal = "ABAABABA";
             size_t lenOriginal = strlen(textoOriginal);
 
             size_t pairCount = 0;
