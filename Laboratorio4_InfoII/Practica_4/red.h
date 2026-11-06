@@ -31,18 +31,8 @@ public:
     void imprimirTablas() const;
     void imprimirCaminos() const;
     void imprimirTopologia() const;
+
 };
 
-inline int Red::cantidadEnrutadores() const {
-    return static_cast<int>(enrutadores.size());
-}
-
-// Los enlaces son bidireccionales: cada uno aparece en dos enrutadores.
-inline int Red::cantidadEnlaces() const {
-    int total = 0;
-    for (const auto& router : enrutadores)
-        total += static_cast<int>(router.second.getVecinos().size());
-    return total / 2;
-}
 
 #endif
