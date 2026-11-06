@@ -1,6 +1,9 @@
 #include "interfaz.h"
+#include "creadorTopologia.h"
 
+#include <filesystem>
 #include <iostream>
+#include <list>
 #include <string>
 
 namespace {
@@ -20,9 +23,42 @@ int leerEntero(const std::string& msg) {
     }
 }
 
+std::filesystem::path directorioDebug() {
+    const std::filesystem::path actual = std::filesystem::current_path();
+    if (actual.filename() == "debug") return actual;
+    return actual / "debug";
+}
+
+bool nombreArchivoDebug(const std::string& nombreIngresado, std::filesystem::path& ruta) {
+    if (nombreIngresado.empty()) return false;
+    std::filesystem::path nombre(nombreIngresado);
+    // Solo se permite un nombre de archivo, para que siempre se use el directorio debug.
+    if (nombre.is_absolute() || nombre.has_parent_path() || nombre.filename() != nombre)
+        return false;
+    if (nombre.extension().empty()) nombre += ".txt";
+    ruta = directorioDebug() / nombre;
+    return true;
+}
+
+bool cargarDesdeDebug(Red& red, const std::string& etiqueta) {
+    const std::string nombre = leer("Nombre del archivo de topologia en debug (ej. topologia.txt): ");
+    std::filesystem::path ruta;
+    if (!nombreArchivoDebug(nombre, ruta)) {
+        std::cout << "Ingresa solo el nombre del archivo, sin carpetas.\n";
+        return false;
+    }
+    if (!red.cargarTopologia(ruta.string())) {
+        std::cout << "No se pudo abrir: " << ruta.string() << "\n";
+        return false;
+    }
+    std::cout << etiqueta << " cargada desde " << ruta.string() << ".\n";
+    red.imprimirTablas();
+    return true;
+}
+
 void menu() {
     std::cout << "\n===== SIMULADOR DE RED DE ENRUTADORES =====\n"
-              << "1. Cargar topologia desde archivo\n"
+              << "1. Cargar topologia desde debug\n"
               << "2. Agregar enrutador\n"
               << "3. Eliminar enrutador\n"
               << "4. Agregar / modificar enlace\n"
@@ -31,6 +67,8 @@ void menu() {
               << "7. Mostrar caminos completos\n"
               << "8. Consultar camino entre dos enrutadores\n"
               << "9. Mostrar enlaces directos\n"
+              << "10. Crear archivo de topologia en debug\n"
+              << "11. Prueba: cargar topologia desde debug\n"
               << "0. Salir\n";
 }
 } // namespace
@@ -41,16 +79,9 @@ void ejecutarInterfaz(Red& red) {
         menu();
         const int op = leerEntero("Opcion: ");
         switch (op) {
-        case 1: {
-            const std::string ruta = leer("Ruta del archivo: ");
-            if (red.cargarTopologia(ruta)) {
-                std::cout << "Topologia cargada.\n";
-                red.imprimirTablas();
-            } else {
-                std::cout << "No se pudo abrir el archivo.\n";
-            }
+        case 1:
+            cargarDesdeDebug(red, "Topologia");
             break;
-        }
         case 2: {
             const std::string id = leer("Id del nuevo enrutador: ");
             std::cout << (red.agregarEnrutador(id) ? "Enrutador agregado.\n"
@@ -106,6 +137,28 @@ void ejecutarInterfaz(Red& red) {
         }
         case 9:
             red.imprimirTopologia();
+            break;
+        case 10: {
+            const std::string nombre = leer("Nombre para el archivo de topologia (ej. topologia.txt): ");
+            std::filesystem::path ruta;
+            if (!nombreArchivoDebug(nombre, ruta)) {
+                std::cout << "Ingresa solo un nombre de archivo, sin carpetas.\n";
+                break;
+            }
+            std::error_code error;
+            std::filesystem::create_directories(ruta.parent_path(), error);
+            if (error) {
+                std::cout << "No se pudo crear el directorio debug: " << error.message() << "\n";
+                break;
+            }
+            if (crearArchivoTopologia(ruta.string()))
+                std::cout << "Topologia guardada en: " << ruta.string() << "\n";
+            else
+                std::cout << "No se pudo crear la topologia.\n";
+            break;
+        }
+        case 11:
+            cargarDesdeDebug(red, "Prueba");
             break;
         case 0:
             salir = true;
