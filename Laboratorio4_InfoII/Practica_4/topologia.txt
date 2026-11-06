@@ -1,0 +1,14 @@
+# Topologia de la Figura 1 de la guia
+# R <id>               -> enrutador
+# E <id1> <id2> <costo> -> enlace bidireccional
+R A
+R B
+R C
+R D
+
+E A B 4
+E A C 10
+E A D 5
+E B C 3
+E B D 1
+E C D 2
