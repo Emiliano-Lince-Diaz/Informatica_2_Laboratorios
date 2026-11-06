@@ -34,7 +34,7 @@ bool crearArchivoTopologia(const std::string& rutaArchivo) {
         std::string id;
         std::cout << "Id del enrutador " << i + 1 << ": ";
         std::getline(std::cin, id);
-        if (id.empty() || id.find_first_of(" \t") != std::string::npos ||
+        if (id.empty() || id.find_first_of(" \t#") != std::string::npos ||
             !routers.insert(id).second) {
             std::cout << "Id vacio, repetido o con espacios. Intenta de nuevo.\n";
             --i;

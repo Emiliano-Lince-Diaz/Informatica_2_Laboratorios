@@ -17,6 +17,8 @@ public:
 
     bool existe(const std::string& id) const;
     bool vacia() const;
+    int cantidadEnrutadores() const;
+    int cantidadEnlaces() const;
     bool agregarEnrutador(const std::string& id);
     bool removerEnrutador(const std::string& id);
     bool agregarEnlace(const std::string& origen, const std::string& destino, int costo);
@@ -30,5 +32,17 @@ public:
     void imprimirCaminos() const;
     void imprimirTopologia() const;
 };
+
+inline int Red::cantidadEnrutadores() const {
+    return static_cast<int>(enrutadores.size());
+}
+
+// Los enlaces son bidireccionales: cada uno aparece en dos enrutadores.
+inline int Red::cantidadEnlaces() const {
+    int total = 0;
+    for (const auto& router : enrutadores)
+        total += static_cast<int>(router.second.getVecinos().size());
+    return total / 2;
+}
 
 #endif
