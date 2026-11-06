@@ -11,7 +11,9 @@ void mostrarMenuPrincipal();
 // Despliega el menú de pruebas de algoritmos (RLE / LZ78)
 void mostrarMenuPruebas();
 
-void ejecutarFlujoCompleto();
+void ejecutarFlujoCompleto(); // Procesamiento desde archivo
+
+void ejecutarProcesamientoTexto(); // Procesamiento directo de texto
 }
 
 #endif // MENU_H

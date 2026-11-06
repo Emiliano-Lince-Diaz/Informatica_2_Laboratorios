@@ -290,6 +290,109 @@ void mostrarMenuPruebas() {
     }
 }
 
+void ejecutarProcesamientoTexto() {
+    cout << "\n========================================\n";
+    cout << "     PROCESAR CADENA DE TEXTO DIRECTA   \n";
+    cout << "========================================\n";
+
+    // Limpieza de buffer previa a la lectura de la cadena completa
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    string textoEntrada;
+    cout << "Ingrese la cadena de texto a procesar: ";
+    getline(cin, textoEntrada);
+
+    if (textoEntrada.empty()) {
+        cout << "[ERROR] La cadena de texto no puede estar vacia.\n";
+        return;
+    }
+
+    cout << "\nSeleccione el metodo de compresion:\n";
+    cout << "1. RLE\n";
+    cout << "2. LZ78\n";
+    int metodoCompresion = leerOpcion(1, 2);
+
+    cout << "\nParametros de Criptografia:\n";
+    cout << "Ingrese la clave K (0 - 255): ";
+    unsigned char claveK = static_cast<unsigned char>(leerOpcion(0, 255));
+
+    cout << "Ingrese el desplazamiento de rotacion n (1 - 7): ";
+    int shiftN = leerOpcion(1, 7);
+
+    try {
+        unsigned char* bufferAEncriptar = nullptr;
+        size_t lenBufferAEncriptar = 0;
+
+        // 1. Compresión
+        if (metodoCompresion == 1) { // RLE
+            string textoComprimido = RLE::compress(textoEntrada);
+            lenBufferAEncriptar = textoComprimido.length();
+            bufferAEncriptar = new unsigned char[lenBufferAEncriptar];
+            memcpy(bufferAEncriptar, textoComprimido.c_str(), lenBufferAEncriptar);
+
+            cout << "\n[OK] Texto comprimido con RLE: " << textoComprimido << "\n";
+        }
+        else { // LZ78
+            size_t pairCount = 0;
+            Pair* pairs = LZ78::compress(textoEntrada.c_str(), textoEntrada.length(), pairCount);
+
+            // Serialización binaria en memoria
+            lenBufferAEncriptar = sizeof(size_t) + (pairCount * sizeof(Pair));
+            bufferAEncriptar = new unsigned char[lenBufferAEncriptar];
+
+            memcpy(bufferAEncriptar, &pairCount, sizeof(size_t));
+            memcpy(bufferAEncriptar + sizeof(size_t), pairs, pairCount * sizeof(Pair));
+
+            cout << "\n[OK] Compresion LZ78 finalizada (" << pairCount << " pares emitidos).\n";
+            delete[] pairs;
+        }
+
+        // 2. Encriptación
+        Cripto::encrypt(bufferAEncriptar, lenBufferAEncriptar, claveK, shiftN);
+        cout << "[OK] Encriptacion bitwise aplicada.\n";
+
+        cout << "    Muestra encriptada (Hex): ";
+        for (size_t i = 0; i < lenBufferAEncriptar && i < 20; ++i) {
+            cout << hex << static_cast<int>(bufferAEncriptar[i]) << " ";
+        }
+        cout << dec << (lenBufferAEncriptar > 20 ? "...\n" : "\n");
+
+        // 3. Desencriptación
+        Cripto::decrypt(bufferAEncriptar, lenBufferAEncriptar, claveK, shiftN);
+        cout << "[OK] Desencriptacion completada.\n";
+
+        // 4. Descompresión
+        string textoRestaurado = "";
+
+        if (metodoCompresion == 1) { // RLE
+            string textoComprimidoRecuperado(reinterpret_cast<char*>(bufferAEncriptar), lenBufferAEncriptar);
+            textoRestaurado = RLE::decompress(textoComprimidoRecuperado);
+        }
+        else { // LZ78
+            size_t pairCountRecuperado = 0;
+            memcpy(&pairCountRecuperado, bufferAEncriptar, sizeof(size_t));
+            Pair* pairsRecuperados = reinterpret_cast<Pair*>(bufferAEncriptar + sizeof(size_t));
+
+            size_t lenFinal = 0;
+            char* rawRestaurado = LZ78::decompress(pairsRecuperados, pairCountRecuperado, lenFinal);
+            textoRestaurado = string(rawRestaurado, lenFinal);
+            delete[] rawRestaurado;
+        }
+
+        delete[] bufferAEncriptar;
+
+        // 5. Verificación de coincidencia
+        cout << "\n----------------------------------------\n";
+        cout << "Texto Original:   " << textoEntrada << "\n";
+        cout << "Texto Recuperado: " << textoRestaurado << "\n";
+        cout << "Estado: " << (textoEntrada == textoRestaurado ? "[CORRECTO]" : "[ERROR]") << "\n";
+        cout << "----------------------------------------\n";
+
+    } catch (const exception& e) {
+        cout << "\n[ERROR]: " << e.what() << "\n";
+    }
+}
+
 void mostrarMenuPrincipal() {
     bool ejecutando = true;
 
@@ -297,18 +400,22 @@ void mostrarMenuPrincipal() {
         cout << "\n========================================\n";
         cout << "       SISTEMA PRINCIPAL C++            \n";
         cout << "========================================\n";
-        cout << "1. Procesar Archivo (Compresion + Criptografia)\n";
-        cout << "2. Seccion de Pruebas Unitarias\n";
+        cout << "1. Procesar Archivo en Disco\n";
+        cout << "2. Procesar Texto Directo (Consola)\n";
+        cout << "3. Seccion de Pruebas Unitarias\n";
         cout << "0. Salir\n";
         cout << "========================================\n";
 
-        int opcion = leerOpcion(0, 2);
+        int opcion = leerOpcion(0, 3);
 
         switch (opcion) {
         case 1:
             ejecutarFlujoCompleto();
             break;
         case 2:
+            ejecutarProcesamientoTexto();
+            break;
+        case 3:
             mostrarMenuPruebas();
             break;
         case 0:
@@ -318,4 +425,6 @@ void mostrarMenuPrincipal() {
         }
     }
 }
+
+
 }
