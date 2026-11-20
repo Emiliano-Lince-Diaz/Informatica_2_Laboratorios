@@ -1,0 +1,16 @@
+debug/Entidad.o
+debug/Juego.o
+debug/Obstaculo.o
+debug/ResolutorColisiones.o
+debug/Rival.o
+debug/VentanaJuego.o
+debug/bola.o
+debug/canon.o
+debug/jugador.o
+debug/main.o
+debug/mainwindow.o
+debug/motorfisica.o
+debug/pared.o
+debug/vector2d.o
+debug/moc_VentanaJuego.o
+debug/moc_mainwindow.o

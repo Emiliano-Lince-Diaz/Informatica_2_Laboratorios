@@ -1,0 +1,16 @@
+release/Entidad.o
+release/Juego.o
+release/Obstaculo.o
+release/ResolutorColisiones.o
+release/Rival.o
+release/VentanaJuego.o
+release/bola.o
+release/canon.o
+release/jugador.o
+release/main.o
+release/mainwindow.o
+release/motorfisica.o
+release/pared.o
+release/vector2d.o
+release/moc_VentanaJuego.o
+release/moc_mainwindow.o
